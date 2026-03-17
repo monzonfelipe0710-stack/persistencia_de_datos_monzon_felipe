@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alumnos (Backend)</title>
+    <style>
+        body { font-family: 'Inter', Arial, sans-serif; background-color: #eef2f3; margin: 0; padding: 40px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #34495e; }
+        input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 15px; background-color: #3498db; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { padding: 15px; border-bottom: 1px solid #ecf0f1; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #2c3e50; }
+        tr:hover { background-color: #f1f2f6; }
+        .server-status { text-align: center; color: #27ae60; font-weight: bold; font-size: 0.9em; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cargar Alumno (Servidor)</h1>
+        <div class="server-status">Conectado al servidor. Guardando en memoria del backend.</div>
+        
+        <form id="studentForm">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="edad">Edad:</label>
+                <input type="number" id="edad" required min="1">
+            </div>
+            <div class="form-group">
+                <label for="nota">Nota:</label>
+                <input type="number" id="nota" step="0.1" required min="0" max="10">
+            </div>
+            <button type="submit">Guardar y Recargar</button>
+        </form>
+
+        <h2>Lista de Alumnos</h2>
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Edad</th>
+                    <th>Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Contenido generado por JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Cargar alumnos desde el servidor al iniciar
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/alumnos');
+                const alumnos = await response.json();
+                
+                const tbody = document.querySelector('#studentsTable tbody');
+                tbody.innerHTML = '';
+                
+                alumnos.forEach(alumno => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${alumno.nombre}</td>
+                        <td>${alumno.edad}</td>
+                        <td>${alumno.nota}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error al obtener alumnos:", err);
+            }
+        });
+
+        // Guardar nuevo alumno en el servidor
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const edad = document.getElementById('edad').value;
+            const nota = document.getElementById('nota').value;
+
+            try {
+                const response = await fetch('/api/alumnos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, edad, nota })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Ocurrió un error al guardar el alumno.");
+                }
+            } catch (error) {
+                console.error("Error en la petición POST:", error);
+            }
+        });
+    </script>
+</body>
+</html>
